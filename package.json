@@ -11,6 +11,7 @@
   "dependencies": {
     "@hapi/hapi": "^21.4.4",
     "@hapi/joi": "^17.1.1",
+    "alasql": "^4.17.0",
     "dotenv": "^17.2.3"
   }
 }
