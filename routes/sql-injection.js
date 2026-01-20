@@ -115,7 +115,7 @@ module.exports = [
     handler: (request, h) => {
       const { username, password } = request.payload;
       const sqlQuery =
-        `SELECT username FROM logins WHERE username = '${username}' AND password=${password}`.split(
+        `SELECT username FROM logins WHERE username = '${username}' AND password = '${password}'`.split(
           "--",
         )[0];
       try {
