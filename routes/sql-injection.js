@@ -60,11 +60,22 @@ module.exports = [
         const allNonFooProducts = alasql("SELECT * FROM products").filter(
           (p) => p.category !== "foo",
         );
+
         if (results.some((result) => Object.keys(result).length !== 3)) {
           throw new Error(
-            "ORA-01789: query block has incorrect number of result columns or " +
-              "ORA-01400: cannot insert NULL into columns",
+            "ORA-01789: query block has incorrect number of result columns",
           );
+        }
+
+        if (
+          results.some(
+            (item) =>
+              item.id == undefined ||
+              item.product == undefined ||
+              item.price == undefined,
+          )
+        ) {
+          throw new Error("ORA-01400: cannot insert NULL into columns");
         }
         if (
           results.some(
