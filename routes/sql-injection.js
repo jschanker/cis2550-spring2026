@@ -19,6 +19,7 @@ module.exports = [
         )[0];
 
       try {
+        alasql.options.undefined = null;
         alasql("DROP TABLE IF EXISTS products");
         alasql("DROP TABLE IF EXISTS users");
         alasql(
@@ -41,11 +42,49 @@ module.exports = [
 
         // console.log('running', products, users, sqlQuery);
         const results = alasql(sqlQuery);
+        /*
+        if (
+          results.some((item) =>
+            Object.keys(item).some((key) =>
+              results.some(
+                (compItem) =>
+                  compItem[key] != null &&
+                  typeof item[key] != typeof compItem[key],
+              ),
+            ),
+          )
+        ) {
+          throw new Error("Mixed data types in results");
+        }
+*/
+        const allNonFooProducts = alasql("SELECT * FROM products").filter(
+          (p) => p.category !== "foo",
+        );
+        if (results.some((result) => Object.keys(result).length !== 3)) {
+          throw new Error(
+            "ORA-01789: query block has incorrect number of result columns or " +
+              "ORA-01400: cannot insert NULL into columns",
+          );
+        }
+        if (
+          results.some(
+            (item) =>
+              parseInt(item.id) != parseFloat(item.id) ||
+              typeof item.product !== "string" ||
+              parseInt(item.price) !== parseFloat(item.price),
+          )
+        ) {
+          throw new Error(
+            "ORA-01790: expression must have same datatype as corresponding expression",
+          );
+        }
         if (
           results.length != 3 ||
-          results.filter(({ id }) => id).length > 1 ||
+          allNonFooProducts.some((p) =>
+            results.map(({ product }) => product).includes(p.product),
+          ) ||
           results.filter(({ product }) =>
-            String(product).replace(/\s/g).startsWith("admin@"),
+            String(product).replace(/\s/g, "").startsWith("admin@"),
           ).length !== 1
         ) {
           results.forEach((result) => {
@@ -65,7 +104,7 @@ module.exports = [
         return h.response(results).code(200);
       } catch (error) {
         return h
-          .response([{ query: sqlQuery + " is an invalid Query" }])
+          .response([{ query: sqlQuery + " is an invalid Query: " + error }])
           .code(400);
       }
     },
