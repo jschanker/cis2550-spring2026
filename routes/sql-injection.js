@@ -121,7 +121,7 @@ module.exports = [
       try {
         alasql("DROP TABLE IF EXISTS logins");
         alasql("CREATE TABLE logins (username STRING, password STRING)");
-        alasql("INSERT INTO logins VALUES (?, ?, ?, ?)", [
+        alasql("INSERT INTO logins VALUES (?, ?)", [
           "administrator",
           process.env.SQL_INJECTION_ADMIN_PASSWORD,
         ]);
