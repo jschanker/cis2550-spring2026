@@ -1,21 +1,29 @@
 require("dotenv").config();
-const alasql = require("alasql");
-const prefix = "dir-traversal";
 const fs = require("fs");
 const path = require("path");
+const prefix = "dir-traversal";
+const rootDir = "root";
+const simRootDir = fs.realpathSync(process.cwd(), rootDir);
+const labDir = path.join(simRootDir, "var", "www", "images", "highres");
 
 function getFiles(dir, fileList = []) {
   try {
-    const rootDir = process.cwd();
-    const files = fs.readdirSync(dir || rootDir);
+    const fileDir = path.resolve(labDir, dir || ".");
+
+    if (!fileDir.startsWith(simRootDir)) {
+      throw new Error("Nice try, but you're still in the jail!");
+    }
+
+    const files = fs.readdirSync(fileDir, { withFileTypes: true });
+
     files.forEach((file) => {
-      const name = path.join(dir, file);
-      if (fs.statSync(name).isDirectory()) {
-        if (file !== "node_modules" && file !== ".git") {
+      const name = path.join(dir, file.name);
+      if (file.isDirectory()) {
+        if (file.name !== "node_modules" && file.name !== ".git") {
           getFiles(name, fileList);
         }
       } else {
-        fileList.push(name.replace(rootDir, ""));
+        fileList.push(path.join("/", name));
       }
     });
     return fileList;
@@ -29,7 +37,7 @@ module.exports = [
     method: "GET",
     path: `/${prefix}/files`,
     handler: (request, h) => {
-      const rootDir = request.query.root || process.cwd();
+      const rootDir = request.query.root;
       const allFiles = getFiles(rootDir);
       if (allFiles.error) {
         console.log(allFiles.error);
@@ -55,10 +63,16 @@ module.exports = [
     handler: (request, h) => {
       const filePath = request.query.path;
       try {
-        if (fs.statSync(filePath).size > 250000) {
+        const actualFilePath = path.resolve(labDir, filePath);
+
+        if (!actualFilePath.startsWith(simRootDir)) {
+          throw new Error("Nice try, but you're still in the jail!");
+        }
+
+        if (fs.statSync(actualFilePath).size > 250000) {
           throw new Error("File size exceeds 250KB limit");
         }
-        const contents = fs.readFileSync(filePath);
+        const contents = fs.readFileSync(actualFilePath);
         return h
           .response({
             data: contents,
