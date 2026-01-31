@@ -8,6 +8,7 @@ mkdir -p $LAB_DIR
 mkdir -p $LAB_DIR/etc
 mkdir -p $LAB_DIR/var/log
 mkdir -p $LAB_DIR/home/user
+mkdir -p public
 
 echo "root:x:0:0:root:/root:/bin/bash" > $LAB_DIR/etc/passwd
 echo "games:x:5:60:games:/usr/games:/sbin/nologin" >> $LAB_DIR/etc/passwd
