@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "build": "sh scripts/setup-lab.sh",
+    "build": "sh scripts/setup-lab.sh && vercel build",
     "start": "node index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
