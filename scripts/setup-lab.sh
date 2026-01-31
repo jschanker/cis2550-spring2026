@@ -11,8 +11,6 @@ mkdir -p $LAB_DIR/home/user
 mkdir -p public
 touch public/index.html
 
-mv index.js api/index.js
-
 echo "root:x:0:0:root:/root:/bin/bash" > $LAB_DIR/etc/passwd
 echo "games:x:5:60:games:/usr/games:/sbin/nologin" >> $LAB_DIR/etc/passwd
 echo "sbx_user105:x:990:990:Sandbox User:/:/sbin/nologin" >> $LAB_DIR/etc/passwd

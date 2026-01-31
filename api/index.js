@@ -4,6 +4,7 @@ const fs = require("fs");
 
 const init = async () => {
   const server = Hapi.server({
+    port: 55688,
     routes: {
       cors: {
         origin: ["*"],
