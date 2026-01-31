@@ -1,5 +1,8 @@
 {
   "version": 2,
+  "functions": {
+    "index.js": { "runtime": "@vercel/node" }
+  },
   "rewrites": [
     {
       "source": "/(.*)",
