@@ -3,7 +3,7 @@ const fs = require("fs");
 const path = require("path");
 const prefix = "dir-traversal";
 const rootDir = "root";
-const simRootDir = fs.realpathSync(process.cwd(), rootDir);
+const simRootDir = fs.realpathSync(path.join(process.cwd(), rootDir));
 const labDir = path.join(simRootDir, "var", "www", "images", "highres");
 
 function getFiles(dir, fileList = []) {
