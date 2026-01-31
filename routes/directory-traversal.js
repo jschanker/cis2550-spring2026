@@ -36,4 +36,26 @@ module.exports = [
         .code(200);
     },
   },
+  {
+    method: "GET",
+    path: `/${prefix}/read`,
+    handler: (request, h) => {
+      const filePath = request.query.path;
+      try {
+        const contents = fs.readFileSync(filePath, "utf8");
+        return h
+          .response({
+            data: contents,
+          })
+          .code(200);
+      } catch (error) {
+        return h
+          .response({
+            data: "Error reading file",
+            error: error.message,
+          })
+          .code(400);
+      }
+    },
+  },
 ];
