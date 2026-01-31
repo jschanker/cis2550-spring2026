@@ -5,19 +5,23 @@ const fs = require("fs");
 const path = require("path");
 
 function getFiles(dir, fileList = []) {
-  const rootDir = process.cwd();
-  const files = fs.readdirSync(dir || rootDir);
-  files.forEach((file) => {
-    const name = path.join(dir, file);
-    if (fs.statSync(name).isDirectory()) {
-      if (file !== "node_modules" && file !== ".git") {
-        getFiles(name, fileList);
+  try {
+    const rootDir = process.cwd();
+    const files = fs.readdirSync(dir || rootDir);
+    files.forEach((file) => {
+      const name = path.join(dir, file);
+      if (fs.statSync(name).isDirectory()) {
+        if (file !== "node_modules" && file !== ".git") {
+          getFiles(name, fileList);
+        }
+      } else {
+        fileList.push(name.replace(rootDir, ""));
       }
-    } else {
-      fileList.push(name.replace(rootDir, ""));
-    }
-  });
-  return fileList;
+    });
+    return fileList;
+  } catch (error) {
+    return { error: error.message };
+  }
 }
 
 module.exports = [
@@ -27,6 +31,15 @@ module.exports = [
     handler: (request, h) => {
       const rootDir = request.query.root || process.cwd();
       const allFiles = getFiles(rootDir);
+      if (allFiles.error) {
+        console.log(allFiles.error);
+        return h
+          .response({
+            message: "Error retrieving directory structure",
+            error: allFiles.error,
+          })
+          .code(400);
+      }
       return h
         .response({
           message: "Directory Structure Retrieved",
@@ -42,7 +55,10 @@ module.exports = [
     handler: (request, h) => {
       const filePath = request.query.path;
       try {
-        const contents = fs.readFileSync(filePath, "utf8");
+        if (fs.statSync(filePath).size > 250000) {
+          throw new Error("File size exceeds 250KB limit");
+        }
+        const contents = fs.readFileSync(filePath);
         return h
           .response({
             data: contents,
