@@ -1,7 +1,7 @@
 {
   "version": 2,
   "functions": {
-    "index.js": { "runtime": "@vercel/node" }
+    "index.js": { "runtime": "@vercel/node@latest" }
   },
   "rewrites": [
     {
