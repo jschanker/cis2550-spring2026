@@ -1,6 +1,7 @@
 #!/bin/bash
 
 LAB_DIR="./root"
+TARGET_DIR="$LAB_DIR/var/www/images/icons"
 
 rm -rf "$LAB_DIR"
 mkdir -p "$LAB_DIR"
@@ -8,8 +9,7 @@ mkdir -p "$LAB_DIR"
 mkdir -p "$LAB_DIR/etc"
 mkdir -p "$LAB_DIR/var/log"
 mkdir -p "$LAB_DIR/home/user"
-mkdir -p "$LAB_DIR/var/www/images/icons"
-TARGET_DIR="$LAB_DIR/var/www/images/icons"
+mkdir -p $TARGET_DIR
 
 # 1. Document Icon
 cat << 'EOF' > "$TARGET_DIR/document.svg"

@@ -5,7 +5,7 @@ const path = require("path");
 const prefix = "dir-traversal";
 const rootDir = "root";
 const simRootDir = fs.realpathSync(path.join(process.cwd(), rootDir));
-const labDir = path.join(simRootDir, "var", "www", "images", "highres");
+const labDir = path.join(simRootDir, "var", "www", "images", "icons");
 
 function getFiles(dir, includeDir = false) {
   dir = typeof dir === "string" ? dir : "";
