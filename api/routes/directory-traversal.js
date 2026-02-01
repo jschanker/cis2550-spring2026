@@ -18,7 +18,7 @@ function getFiles(dir, includeDir = false) {
   dir = typeof dir === "string" ? dir : "./";
   try {
     const actualPath = getPathWithRespectToSimRoot(
-      path.join(virtualLabDir, dir),
+      path.resolve(virtualLabDir, dir),
     );
 
     console.log("Accessing path:", actualPath);
