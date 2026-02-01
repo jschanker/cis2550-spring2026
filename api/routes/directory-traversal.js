@@ -5,40 +5,39 @@ const path = require("path");
 const prefix = "dir-traversal";
 const rootDir = "root";
 const simRootDir = fs.realpathSync(path.join(process.cwd(), rootDir));
-const labDir = path.join(simRootDir, "var", "www", "images", "icons");
+const virtualLabDir = path.join("var", "www", "images", "icons");
+const actualLabDir = getPathWithRespectToSimRoot(virtualLabDir);
+
+function getPathWithRespectToSimRoot(dir) {
+  const virtualNormalized = path.normalize(dir).replace(/^((\.\.)[/\\]?)+/, "");
+  console.log(simRootDir, virtualNormalized);
+  return path.join(simRootDir, virtualNormalized);
+}
 
 function getFiles(dir, includeDir = false) {
-  dir = typeof dir === "string" ? dir : "";
+  dir = typeof dir === "string" ? dir : "./";
   try {
-    const requestedPath = path.resolve(labDir, dir);
-    const relativeFromSimRoot = path.relative(simRootDir, requestedPath);
-    const virtualRelativePath = relativeFromSimRoot.replace(
-      /^((\.\.)[/\\]?)+/,
-      "",
+    const actualPath = getPathWithRespectToSimRoot(
+      path.join(virtualLabDir, dir),
     );
-    // console.log("Resolved path:", relativeFromSimRoot, virtualRelativePath);
-    const resolvedPath = path.resolve(simRootDir, virtualRelativePath);
-    if (!fs.existsSync(resolvedPath)) {
-      throw new Error(`No such file or directory: ${dir}`);
-    }
-    const fileDir = fs.realpathSync(resolvedPath);
 
-    if (!fileDir.startsWith(simRootDir)) {
+    console.log("Accessing path:", actualPath);
+
+    if (
+      (fs.existsSync(actualPath) &&
+        !fs.realpathSync(actualPath).startsWith(simRootDir)) ||
+      (!fs.existsSync(actualPath) && !actualPath.startsWith(simRootDir))
+    ) {
       throw new Error("Nice try, but you're still in the jail!");
     }
+
+    if (!fs.existsSync(actualPath)) {
+      throw new Error(`No such file or directory: ${dir}`);
+    }
+
     const fileList = [];
 
-    /*
-    let fileDir = fs.realpathSync(path.resolve(labDir, dir));
-
-    if (!fileDir.startsWith(simRootDir)) {
-      const startIndex = Array.from(fileDir).findIndex(
-        (c, i) => c !== simRootDir[i],
-      );
-      fileDir = path.join(simRootDir, fileDir.slice(startIndex));
-    }
-*/
-    const files = fs.readdirSync(fileDir, { withFileTypes: true });
+    const files = fs.readdirSync(actualPath, { withFileTypes: true });
 
     for (const file of files) {
       const name = path.join(dir, file.name);
@@ -101,38 +100,26 @@ module.exports = [
     method: "GET",
     path: `/${prefix}/read`,
     handler: (request, h) => {
-      const filePath = request.query.path;
+      const actualFilePath = getPathWithRespectToSimRoot(
+        path.resolve(virtualLabDir, request.query.path || "./"),
+      );
       try {
-        /*
-        const tree = execSync("ls -RF ./root", { encoding: "utf8" });
-        console.log("--- Physical Directory Tree ---");
-        console.log(tree);
-        console.log("-------------------------------");
-        */
-        const requestedPath = path.resolve(labDir, filePath);
-        const relativeFromSimRoot = path.relative(simRootDir, requestedPath);
-        const virtualRelativePath = relativeFromSimRoot.replace(
-          /^((\.\.)[/\\]?)+/,
-          "",
-        );
-        const resolvedPath = path.resolve(simRootDir, virtualRelativePath);
-        console.log(
-          simRootDir,
-          labDir,
-          filePath,
-          requestedPath,
-          relativeFromSimRoot,
-          virtualRelativePath,
-          resolvedPath,
-        );
-        if (!fs.existsSync(resolvedPath)) {
-          throw new Error(`No such file or directory: ${relativeFromSimRoot}`);
-        }
-        const actualFilePath = fs.realpathSync(resolvedPath);
-
-        if (!actualFilePath.startsWith(simRootDir)) {
+        if (
+          (fs.existsSync(actualFilePath) &&
+            !fs.realpathSync(actualFilePath).startsWith(simRootDir)) ||
+          (!fs.existsSync(actualFilePath) &&
+            !actualFilePath.startsWith(simRootDir))
+        ) {
           throw new Error("Nice try, but you're still in the jail!");
         }
+
+        if (!fs.existsSync(actualFilePath)) {
+          throw new Error(
+            `No such file or directory: ${request.query.path || "./"}`,
+          );
+        }
+
+        //        const actualFilePath = fs.realpathSync(resolvedPath);
 
         if (fs.statSync(actualFilePath).size > 250000) {
           throw new Error("File size exceeds 250KB limit");
