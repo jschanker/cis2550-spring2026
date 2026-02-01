@@ -55,15 +55,13 @@ function getFiles(dir, includeDir = false) {
     }
 
     return {
-      files: includeDir
-        ? fileList
-        : fileList.map((fullPath) => {
+      files: includeDir ? fileList : fileList /*.map((fullPath) => {
             if (dir === "" || dir === "/" || dir === ".") return fullPath;
             const prefix = path.join("/", dir, "/");
             return fullPath.startsWith(prefix)
               ? fullPath.replace(prefix, "")
               : fullPath.replace(path.join("/", dir), "");
-          }),
+          }),*/,
       error: null,
     };
   } catch (error) {
