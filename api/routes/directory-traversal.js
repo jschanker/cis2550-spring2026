@@ -5,7 +5,7 @@ const path = require("path");
 const prefix = "dir-traversal";
 const rootDir = "root";
 const simRootDir = fs.realpathSync(path.join(process.cwd(), rootDir));
-const virtualLabDir = path.join("var", "www", "images", "icons");
+const virtualLabDir = path.join("/var", "www", "images", "icons");
 const actualLabDir = getPathWithRespectToSimRoot(virtualLabDir);
 
 function getPathWithRespectToSimRoot(dir) {
