@@ -11,8 +11,11 @@ ls -lt .
 echo "-------------------------------"
 
 mkdir -p "$LAB_DIR/etc"
+mkdir -p "$LAB_DIR/var"
 mkdir -p "$LAB_DIR/var/log"
 mkdir -p "$LAB_DIR/home/user"
+mkdir -p "$LAB_DIR/var/www"
+mkdir -p "$LAB_DIR/var/www/images"
 mkdir -p "$TARGET_DIR"
 
 # 1. Document Icon
