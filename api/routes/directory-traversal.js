@@ -1,4 +1,5 @@
 require("dotenv").config();
+const { error } = require("console");
 const fs = require("fs");
 const path = require("path");
 const prefix = "dir-traversal";
@@ -6,29 +7,68 @@ const rootDir = "root";
 const simRootDir = fs.realpathSync(path.join(process.cwd(), rootDir));
 const labDir = path.join(simRootDir, "var", "www", "images", "highres");
 
-function getFiles(dir, fileList = []) {
+function getFiles(dir, includeDir = false) {
+  dir = typeof dir === "string" ? dir : "";
   try {
-    const fileDir = path.resolve(labDir, dir || ".");
+    const requestedPath = path.resolve(labDir, dir);
+    const relativeFromSimRoot = path.relative(simRootDir, requestedPath);
+    const virtualRelativePath = relativeFromSimRoot.replace(
+      /^((\.\.)[/\\]?)+/,
+      "",
+    );
+    // console.log("Resolved path:", relativeFromSimRoot, virtualRelativePath);
+    const resolvedPath = path.resolve(simRootDir, virtualRelativePath);
+    if (!fs.existsSync(resolvedPath)) {
+      throw new Error(`No such file or directory: ${dir}`);
+    }
+    const fileDir = fs.realpathSync(resolvedPath);
 
     if (!fileDir.startsWith(simRootDir)) {
       throw new Error("Nice try, but you're still in the jail!");
     }
+    const fileList = [];
 
+    /*
+    let fileDir = fs.realpathSync(path.resolve(labDir, dir));
+
+    if (!fileDir.startsWith(simRootDir)) {
+      const startIndex = Array.from(fileDir).findIndex(
+        (c, i) => c !== simRootDir[i],
+      );
+      fileDir = path.join(simRootDir, fileDir.slice(startIndex));
+    }
+*/
     const files = fs.readdirSync(fileDir, { withFileTypes: true });
 
-    files.forEach((file) => {
+    for (const file of files) {
       const name = path.join(dir, file.name);
       if (file.isDirectory()) {
         if (file.name !== "node_modules" && file.name !== ".git") {
-          getFiles(name, fileList);
+          const dirReadResult = getFiles(name, true);
+          if (dirReadResult.error) {
+            return dirReadResult;
+          }
+          fileList.push(...dirReadResult.files);
         }
       } else {
         fileList.push(path.join("/", name));
       }
-    });
-    return fileList;
+    }
+
+    return {
+      files: includeDir
+        ? fileList
+        : fileList.map((fullPath) => {
+            if (dir === "" || dir === "/" || dir === ".") return fullPath;
+            const prefix = path.join("/", dir, "/");
+            return fullPath.startsWith(prefix)
+              ? fullPath.replace(prefix, "")
+              : fullPath.replace(path.join("/", dir), "");
+          }),
+      error: null,
+    };
   } catch (error) {
-    return { error: error.message };
+    return { files: [], error: error.message };
   }
 }
 
@@ -37,8 +77,8 @@ module.exports = [
     method: "GET",
     path: `/${prefix}/files`,
     handler: (request, h) => {
-      const rootDir = request.query.root;
-      const allFiles = getFiles(rootDir);
+      const dir = request.query.root;
+      const allFiles = getFiles(dir);
       if (allFiles.error) {
         console.log(allFiles.error);
         return h
@@ -63,7 +103,17 @@ module.exports = [
     handler: (request, h) => {
       const filePath = request.query.path;
       try {
-        const actualFilePath = path.resolve(labDir, filePath);
+        const requestedPath = path.resolve(labDir, filePath);
+        const relativeFromSimRoot = path.relative(simRootDir, requestedPath);
+        const virtualRelativePath = relativeFromSimRoot.replace(
+          /^((\.\.)[/\\]?)+/,
+          "",
+        );
+        const resolvedPath = path.resolve(simRootDir, virtualRelativePath);
+        if (!fs.existsSync(resolvedPath)) {
+          throw new Error(`No such file or directory: ${relativeFromSimRoot}`);
+        }
+        const actualFilePath = fs.realpathSync(resolvedPath);
 
         if (!actualFilePath.startsWith(simRootDir)) {
           throw new Error("Nice try, but you're still in the jail!");
@@ -73,10 +123,18 @@ module.exports = [
           throw new Error("File size exceeds 250KB limit");
         }
         const contents = fs.readFileSync(actualFilePath);
+        const ext = path.extname(actualFilePath).toLowerCase();
+        const mimeTypes = {
+          ".png": "image/png",
+          ".jpg": "image/jpeg",
+          ".jpeg": "image/jpeg",
+          ".gif": "image/gif",
+          ".svg": "image/svg+xml",
+        };
+
         return h
-          .response({
-            data: contents,
-          })
+          .response(contents)
+          .type(mimeTypes[ext] || "application/octet-stream")
           .code(200);
       } catch (error) {
         return h
