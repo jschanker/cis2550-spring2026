@@ -103,6 +103,10 @@ module.exports = [
     handler: (request, h) => {
       const filePath = request.query.path;
       try {
+        const tree = execSync("ls -RF ./root", { encoding: "utf8" });
+        console.log("--- Physical Directory Tree ---");
+        console.log(tree);
+        console.log("-------------------------------");
         const requestedPath = path.resolve(labDir, filePath);
         const relativeFromSimRoot = path.relative(simRootDir, requestedPath);
         const virtualRelativePath = relativeFromSimRoot.replace(
