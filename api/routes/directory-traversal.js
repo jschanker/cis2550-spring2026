@@ -1,5 +1,5 @@
 require("dotenv").config();
-const { execSync } = require("child_process");
+//const { execSync } = require("child_process");
 const fs = require("fs");
 const path = require("path");
 const prefix = "dir-traversal";
@@ -103,10 +103,12 @@ module.exports = [
     handler: (request, h) => {
       const filePath = request.query.path;
       try {
+        /*
         const tree = execSync("ls -RF ./root", { encoding: "utf8" });
         console.log("--- Physical Directory Tree ---");
         console.log(tree);
         console.log("-------------------------------");
+        */
         const requestedPath = path.resolve(labDir, filePath);
         const relativeFromSimRoot = path.relative(simRootDir, requestedPath);
         const virtualRelativePath = relativeFromSimRoot.replace(
@@ -114,6 +116,15 @@ module.exports = [
           "",
         );
         const resolvedPath = path.resolve(simRootDir, virtualRelativePath);
+        console.log(
+          simRootDir,
+          labDir,
+          filePath,
+          requestedPath,
+          relativeFromSimRoot,
+          virtualRelativePath,
+          resolvedPath,
+        );
         if (!fs.existsSync(resolvedPath)) {
           throw new Error(`No such file or directory: ${relativeFromSimRoot}`);
         }
