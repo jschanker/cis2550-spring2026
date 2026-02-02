@@ -1,6 +1,6 @@
 #!/bin/bash
 
-LAB_DIR="./root"
+LAB_DIR="./$DIRECTORY_TRAVERSAL_ROOT"
 TARGET_DIR="$LAB_DIR/var/www/images/icons"
 
 rm -rf "$LAB_DIR"
@@ -13,7 +13,11 @@ echo "-------------------------------"
 mkdir -p "$LAB_DIR/etc"
 mkdir -p "$LAB_DIR/var"
 mkdir -p "$LAB_DIR/var/log"
-mkdir -p "$LAB_DIR/home/jdoe"
+mkdir -p "$LAB_DIR/home/jdoe1"
+mkdir -p "$LAB_DIR/home/jdoe2"
+mkdir -p "$LAB_DIR/home/jdoe3"
+mkdir -p "$LAB_DIR/home/jdoe4"
+mkdir -p "$LAB_DIR/home/jdoe5"
 mkdir -p "$LAB_DIR/var/www"
 mkdir -p "$LAB_DIR/var/www/images"
 mkdir -p "$TARGET_DIR"
@@ -61,8 +65,21 @@ EOF
 mkdir -p public
 touch public/index.html
 
-touch "$LAB_DIR/home/jdoe/secret.txt"
-echo $DIRECTORY_TRAVERSAL_JDOE_SECRET > "$LAB_DIR/home/jdoe/secret.txt"
+touch "$LAB_DIR/home/jdoe1/secret.txt"
+echo $DIRECTORY_TRAVERSAL_JDOE1_SECRET > "$LAB_DIR/home/jdoe1/secret.txt"
+
+touch "$LAB_DIR/home/jdoe2/secret.txt"
+echo $DIRECTORY_TRAVERSAL_JDOE2_SECRET > "$LAB_DIR/home/jdoe2/secret.txt"
+
+touch "$LAB_DIR/home/jdoe3/secret.txt"
+echo $DIRECTORY_TRAVERSAL_JDOE3_SECRET > "$LAB_DIR/home/jdoe3/secret.txt"
+
+touch "$LAB_DIR/home/jdoe4/secret.txt"
+echo $DIRECTORY_TRAVERSAL_JDOE4_SECRET > "$LAB_DIR/home/jdoe4/secret.txt"
+
+touch "$LAB_DIR/home/jdoe5/secret.txt"
+echo $DIRECTORY_TRAVERSAL_JDOE5_SECRET > "$LAB_DIR/home/jdoe5/secret.txt"
+
 
 echo "root:x:0:0:root:/root:/bin/bash" > "$LAB_DIR/etc/passwd"
 echo "games:x:5:60:games:/usr/games:/sbin/nologin" >> "$LAB_DIR/etc/passwd"

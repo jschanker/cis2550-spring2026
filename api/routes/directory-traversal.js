@@ -3,7 +3,7 @@ require("dotenv").config();
 const fs = require("fs");
 const path = require("path");
 const prefix = "dir-traversal";
-const rootDir = "root";
+const rootDir = process.env.DIRECTORY_TRAVERSAL_ROOT || "root";
 const simRootDir = fs.realpathSync(path.join(process.cwd(), rootDir));
 const virtualLabDir = path.join("/var", "www", "images", "icons");
 const actualLabDir = getPathWithRespectToSimRoot(virtualLabDir);
@@ -100,10 +100,31 @@ module.exports = [
     method: "GET",
     path: `/${prefix}/read`,
     handler: (request, h) => {
-      const actualFilePath = getPathWithRespectToSimRoot(
-        path.resolve(virtualLabDir, request.query.path || "./"),
-      );
       try {
+        let requestedPath = String(request.query.path || "./");
+        if (requestedPath.includes("jdoe1") && path.isAbsolute(requestedPath)) {
+          throw new Error("Absolute paths to jdoe1 are not allowed");
+        } else if (
+          requestedPath.includes("jdoe2") &&
+          !path.isAbsolute(requestedPath)
+        ) {
+          throw new Error("Relative paths to jdoe2 are not allowed");
+        } else if (requestedPath.includes("jdoe3")) {
+          requestedPath = requestedPath.replace(/..[\/\\]/g, "");
+          if (path.isAbsolute(requestedPath)) {
+            throw new Error("Absolute paths to jdoe3 are not allowed");
+          }
+        } else if (requestedPath.includes("jdoe4")) {
+          requestedPath = requestedPath
+            .replace(/\./g, "%2e")
+            .replace(/\//g, "%2f");
+          if (path.isAbsolute(requestedPath)) {
+            throw new Error("Absolute paths to jdoe4 are not allowed");
+          }
+        }
+        const actualFilePath = getPathWithRespectToSimRoot(
+          path.resolve(virtualLabDir, request.query.path || "./"),
+        );
         if (
           (fs.existsSync(actualFilePath) &&
             !fs.realpathSync(actualFilePath).startsWith(simRootDir)) ||
