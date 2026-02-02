@@ -1,6 +1,6 @@
 #!/bin/bash
 
-LAB_DIR="./$DIRECTORY_TRAVERSAL_ROOT"
+LAB_DIR="./root"
 TARGET_DIR="$LAB_DIR/var/www/images/icons"
 
 rm -rf "$LAB_DIR"
