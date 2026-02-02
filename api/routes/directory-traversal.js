@@ -110,7 +110,7 @@ module.exports = [
         ) {
           throw new Error("Relative paths to jdoe2 are not allowed");
         } else if (requestedPath.includes("jdoe3")) {
-          requestedPath = requestedPath.replace(/..[\/\\]/g, "");
+          requestedPath = requestedPath.replace(/\.\.[\/\\]/g, "");
           if (path.isAbsolute(requestedPath)) {
             throw new Error("Absolute paths to jdoe3 are not allowed");
           }
