@@ -123,7 +123,7 @@ module.exports = [
           }
         }
         const actualFilePath = getPathWithRespectToSimRoot(
-          path.resolve(virtualLabDir, request.query.path || "./"),
+          path.resolve(virtualLabDir, requestedPath || "./"),
         );
         if (
           (fs.existsSync(actualFilePath) &&
@@ -136,7 +136,7 @@ module.exports = [
 
         if (!fs.existsSync(actualFilePath)) {
           throw new Error(
-            `No such file or directory: ${request.query.path || "./"}`,
+            `No such file or directory: ${requestedPath || "./"}`,
           );
         }
 
