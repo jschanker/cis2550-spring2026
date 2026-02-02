@@ -1,6 +1,6 @@
 #!/bin/bash
 
-LAB_DIR="./root"
+LAB_DIR="./$DIRECTORY_TRAVERSAL_ROOT"
 TARGET_DIR="$LAB_DIR/var/www/images/icons"
 
 rm -rf "$LAB_DIR"
@@ -13,6 +13,7 @@ echo "-------------------------------"
 mkdir -p "$LAB_DIR/etc"
 mkdir -p "$LAB_DIR/var"
 mkdir -p "$LAB_DIR/var/log"
+mkdir -p "$LAB_DIR/home/user"
 mkdir -p "$LAB_DIR/home/jdoe1"
 mkdir -p "$LAB_DIR/home/jdoe2"
 mkdir -p "$LAB_DIR/home/jdoe3"
