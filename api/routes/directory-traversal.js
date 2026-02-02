@@ -115,12 +115,14 @@ module.exports = [
             throw new Error("Absolute paths to jdoe3 are not allowed");
           }
         } else if (requestedPath.includes("jdoe4")) {
-          requestedPath = requestedPath
-            .replace(/\./g, "%2e")
-            .replace(/\//g, "%2f");
+          requestedPath = decodeURIComponent(
+            requestedPath.replace(/\./g, "%252e").replace(/\//g, "%252f"),
+          );
           if (path.isAbsolute(requestedPath)) {
             throw new Error("Absolute paths to jdoe4 are not allowed");
           }
+        } else if (requestedPath.includes("jdoe5")) {
+          requestedPath = (requestedPath + ".svg").split("\0")[0];
         }
         const actualFilePath = getPathWithRespectToSimRoot(
           path.resolve(virtualLabDir, requestedPath || "./"),
