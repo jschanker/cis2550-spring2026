@@ -7,7 +7,7 @@ rm -rf "$LAB_DIR"
 mkdir -p "$LAB_DIR"
 
 echo "--- Current Directory ---"
-ls -lt .
+ls -lRt .
 echo "-------------------------------"
 
 mkdir -p "$LAB_DIR/etc"
