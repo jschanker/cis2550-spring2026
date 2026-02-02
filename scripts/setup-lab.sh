@@ -6,10 +6,6 @@ TARGET_DIR="$LAB_DIR/var/www/images/icons"
 rm -rf "$LAB_DIR"
 mkdir -p "$LAB_DIR"
 
-echo "--- Current Directory ---"
-ls -lRt .
-echo "-------------------------------"
-
 mkdir -p "$LAB_DIR/etc"
 mkdir -p "$LAB_DIR/var"
 mkdir -p "$LAB_DIR/var/log"
@@ -88,5 +84,11 @@ echo "sbx_user105:x:990:990:Sandbox User:/:/sbin/nologin" >> "$LAB_DIR/etc/passw
 
 echo "FLAG{TRAVERSAL_MASTER_2026}" > "$LAB_DIR/var/log/system.log"
 echo "Secret note: The admin password is hidden in the environment variables." > "$LAB_DIR/home/user/note.txt"
+
+echo "--- Current Directory ---"
+cd root
+pwd
+ls -lRt
+echo "-------------------------------"
 
 echo "Lab environment provisioned successfully."
