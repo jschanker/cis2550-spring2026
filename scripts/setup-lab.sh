@@ -90,6 +90,7 @@ echo "FLAG{TRAVERSAL_MASTER_2026}" > "$LAB_DIR/var/log/system.log"
 echo "Secret note: The admin password is hidden in the environment variables." > "$LAB_DIR/home/user/note.txt"
 
 touch "$LAB_DIR/var/lib/hashes.txt"
+chmod 600 "$LAB_DIR/var/lib/hashes.txt"
 
 echo "--- Current Directory ---"
 pwd
