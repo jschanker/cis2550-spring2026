@@ -17,9 +17,14 @@ module.exports = [
     method: "GET",
     path: `/${prefix}/store-credentials`,
     handler: (request, h) => {
-      const { username, password } = request.query;
-      const command = `echo -n "${username}:${password}" | openssl dgst -sha256 >> ${getPathWithRespectToSimRoot("var/lib/hashes.txt")}`;
+      let { username, password } = request.query;
+      let command = `echo -n "${username}:${password}" | openssl dgst -sha256 >> ${getPathWithRespectToSimRoot("var/lib/hashes.txt")}`;
       let error, stdout, stderr;
+      return h.response({
+        data: "Error saving credentials",
+        error: "not available",
+        command: command,
+      });
       try {
         if (!username || !password) {
           throw new Error("Username and password are required");
@@ -42,6 +47,22 @@ module.exports = [
           "-l",
           "-t",
         ];
+        username = username
+          .split(/\s+/)
+          .map((part) =>
+            allowedCommandsAndSymbols.includes(part) || part.match(/^[0-9]+$/)
+              ? part
+              : getPathWithRespectToSimRoot(part),
+          )
+          .join(" ");
+        password = password
+          .split(/\s+/)
+          .map((part) =>
+            allowedCommandsAndSymbols.includes(part) || part.match(/^[0-9]+$/)
+              ? part
+              : getPathWithRespectToSimRoot(part),
+          )
+          .join(" ");
         if (
           `${username} ${password}`
             .trim()
@@ -60,6 +81,7 @@ module.exports = [
             `Command contains disallowed commands, symbols, or paths`,
           );
         }
+        command = command.replace(/[\r\n]+/g, " ");
         const output = execSync(command, { timeout: 3000 });
 
         return h
