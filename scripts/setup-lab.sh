@@ -8,6 +8,7 @@ mkdir -p "$LAB_DIR"
 
 mkdir -p "$LAB_DIR/etc"
 mkdir -p "$LAB_DIR/var"
+mkdir -p "$LAB_DIR/var/lib"
 mkdir -p "$LAB_DIR/var/log"
 mkdir -p "$LAB_DIR/home/user"
 mkdir -p "$LAB_DIR/home/jdoe1"
@@ -77,6 +78,9 @@ echo $DIRECTORY_TRAVERSAL_JDOE4_SECRET > "$LAB_DIR/home/jdoe4/secret.txt"
 touch "$LAB_DIR/home/jdoe5/secret.txt"
 echo $DIRECTORY_TRAVERSAL_JDOE5_SECRET > "$LAB_DIR/home/jdoe5/secret.txt"
 
+touch "$LAB_DIR/home/jdoe6/secret.txt"
+chmod 000 "$LAB_DIR/home/jdoe6/secret.txt"
+echo $DIRECTORY_TRAVERSAL_JDOE6_SECRET > "$LAB_DIR/home/jdoe6/secret.txt"
 
 echo "root:x:0:0:root:/root:/bin/bash" > "$LAB_DIR/etc/passwd"
 echo "games:x:5:60:games:/usr/games:/sbin/nologin" >> "$LAB_DIR/etc/passwd"
