@@ -85,13 +85,10 @@ module.exports = [
                   try {
                     console.log("Checking permissions for:", fileName);
                     const fullPath = ctx.fs.resolvePath(ctx.cwd, fileName);
-                    const stat =
-                      (await ctx.fs.exists(fullPath)) && ctx.fs.stat(fullPath);
-
+                    const exists = await ctx.fs.exists(fullPath);
+                    if (!exists) return line;
+                    const stat = await ctx.fs.stat(fullPath);
                     const actualMode = formatMode(stat.mode, stat.isDirectory);
-
-                    // Replace the hardcoded start (e.g., "-rw-r--r--" or "drwxr-xr-x")
-                    // with our real mode bits
                     return line.replace(/^[d-][rwx-]{9}/, actualMode);
                   } catch (e) {
                     console.log(e);
