@@ -33,6 +33,34 @@ const monkeyPatchCat = (bash) => {
   }
 };
 
+const applyReadOnlyPolicy = (bash) => {
+  // Capture the original write methods
+  const originalWriteFile = bash.fs.writeFile?.bind(bash.fs);
+  const originalMkdir = bash.fs.mkdir?.bind(bash.fs);
+
+  // Intercept writeFile (Used by > and >>)
+  bash.fs.writeFile = async (path, content, options) => {
+    const resolvedPath = bash.fs.resolvePath(bash.cwd, path);
+    if (!resolvedPath.startsWith("/tmp")) {
+      throw new Error(`-bash: ${path}: Read-only file system`);
+    }
+    return originalWriteFile(path, content, options);
+  };
+
+  // Intercept Mkdir
+  if (originalMkdir) {
+    bash.fs.mkdir = async (path, options) => {
+      const resolvedPath = bash.fs.resolvePath(bash.cwd, path);
+      if (!resolvedPath.startsWith("/tmp")) {
+        throw new Error(
+          `mkdir: cannot create directory ‘${path}’: Read-only file system`,
+        );
+      }
+      return originalMkdir(path, options);
+    };
+  }
+};
+
 const formatMode = (mode, isDir) => {
   const chars = ["---", "--x", "-w-", "-wx", "r--", "r-x", "rw-", "rwx"];
 
@@ -45,7 +73,15 @@ const formatMode = (mode, isDir) => {
 
 const timeout = (ms) =>
   new Promise((_, reject) =>
-    setTimeout(() => reject(new Error("Command took too long to run")), ms),
+    setTimeout(
+      () =>
+        reject(
+          new Error(
+            `Command took too long to run (Error code ${process.env.COMMAND_INJECTION_TIMEOUT_ERROR_CODE})`,
+          ),
+        ),
+      ms,
+    ),
   );
 const sessions = new Map();
 let ranLs = false; // Flag to indicate if 'ls' was run, so we know when to filter out the rootkit file from the output of 'ls -l'
@@ -72,21 +108,28 @@ module.exports = [
             const isLong = args.some(
               (a) => a.startsWith("-") && a.includes("l"),
             );
+            const targetArg = args.find((arg) => !arg.startsWith("-"));
+            const searchBase = targetArg
+              ? ctx.fs.resolvePath(ctx.cwd, targetArg)
+              : ctx.cwd;
 
             if (isLong && result.stdout) {
               const lines = result.stdout.split("\n");
               //.filter((line) => !line.includes(process.env.HIDDEN_FILE_NAME));
               const patchedLines = await Promise.all(
-                lines.map(async (line) => {
+                lines.map(async (line, index) => {
+                  // lines.slice(0, index).reverse().find(line.split())
                   const match = line.match(/\s(\S+)$/);
-                  if (!match) return line;
+                  if (line.startsWith("total") || !match) return line;
 
                   const fileName = match[1];
                   try {
-                    console.log("Checking permissions for:", fileName);
-                    const fullPath = ctx.fs.resolvePath(ctx.cwd, fileName);
+                    // console.log("Checking permissions for:", fileName);
+                    const fullPath = searchBase.endsWith(fileName)
+                      ? searchBase
+                      : ctx.fs.resolvePath(searchBase, fileName);
                     const exists = await ctx.fs.exists(fullPath);
-                    if (!exists) return line;
+                    if (!exists) return line; // + " (file not found)";
                     const stat = await ctx.fs.stat(fullPath);
                     const actualMode = formatMode(stat.mode, stat.isDirectory);
                     return line.replace(/^[d-][rwx-]{9}/, actualMode);
@@ -148,13 +191,17 @@ module.exports = [
               },
               /*"/home/jdoe/\x1b[1A\x1b[2Khidden_flag.txt":
                 "CTF{terminal_wizardry}",*/
-              [process.env.COMMAND_INJECTION_HIDDEN_FILE_NAME]:
+              [process.env.COMMAND_INJECTION_HIDDEN_ROOT_KIT_DIR +
+              "/" +
+              process.env.COMMAND_INJECTION_HIDDEN_FILE_NAME +
+              "-ROOTKIT"]:
                 //                "This is a hidden file with a secret value: " +
-                process.env.COMMAND_INJECTION_PROTECTED_SECRET,
+                process.env.COMMAND_INJECTION_HIDDEN_SECRET,
             },
           });
           monkeyPatchCat(bashInstance);
           monkeyPatchLs(bashInstance);
+          applyReadOnlyPolicy(bashInstance);
           sessions.set(sessionId, bashInstance);
           // await sessions.get(sessionId).exec(`chmod 000 /home/jdoe/secret.txt`);
         }
